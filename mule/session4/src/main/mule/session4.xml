@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<configuration-properties doc:name="Configuration properties" doc:id="edd7a6c5-4856-41ba-a66a-3a4075fa925d" file="config.properties" />
+	<http:listener-config name="HTTP_Listener_config3" doc:name="HTTP Listener config" doc:id="76942c05-3b61-4fdc-84ce-d02792297fce" >
+		<http:listener-connection host="0.0.0.0" port="${http.port}" />
+	</http:listener-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="feacfeba-5991-4de1-9ad9-4dae31c11085" file="config.properties" />
+	<flow name="session4Flow2" doc:id="76e51b5c-f833-481f-b0c6-8c6681edaf7e" >
+		<http:listener doc:name="Listener" doc:id="905295bb-dd29-47df-8219-054c4f25b445" config-ref="HTTP_Listener_config3" path="trans"/>
+		<ee:transform doc:name="Transform Message" doc:id="7fd520df-c065-4998-b365-8dbf1d11bdfc" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+
+output application/java
+---
+"hi " ++ attributes.queryParams.name]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="Flow" doc:id="4d684f9b-b0bb-473f-ab7a-bbebab2a5173" >
+		<http:listener doc:name="Listener" doc:id="bee436fd-2e41-43fb-9f19-c375f4d9d3b6" config-ref="HTTP_Listener_config3" path="flow"/>
+		<set-variable value="#[attributes.queryParams.name]" doc:name="name" doc:id="cc62eb4f-9197-4aa9-8470-548bc35a05f9" variableName="name"/>
+		<file:read doc:name="Read" doc:id="1a33a234-54ea-4a48-bef4-12739edcb55c" path="C:\AnypointStudio\studio-workspace\session4\mule-artifact.json"/>
+		<set-payload value='#["hi"++ vars.name]' doc:name="Set Payload" doc:id="b494d616-1e53-4681-a45e-33888b294d87" />
+	</flow>
+	<flow name="session4Flow1" doc:id="db50438d-9cd9-4fd8-b5cd-ecbce0079379" >
+		<http:listener doc:name="Listener" doc:id="ed1211a0-17c9-4cf8-8a7a-ef290700e8e4" config-ref="HTTP_Listener_config3" path="logger"/>
+		<logger level="INFO" doc:name="Logger1" doc:id="7d5800a8-0bd4-4811-8d91-c5f95ff38e08" message='#["before var"]'/>
+		<set-variable value="#[attributes.queryParams.name]" doc:name="name" doc:id="2082e8ab-93a6-4933-b9bf-9f5d226d304b" variableName="name"/>
+		<logger level="INFO" doc:name="Logger2" doc:id="87be4c3d-a38e-4703-9add-251c32c880fb" message='#["after var"]'/>
+		<set-payload value="#[vars.name]" doc:name="Set Payload" doc:id="5d8c2629-88d7-412f-8fc5-73cb2baa6c8a" />
+		<logger level="INFO" doc:name="Logger3" doc:id="93383e71-6df0-4664-93d7-94724d94f4a6" message='#["after payload"]'/>
+	</flow>
+	<flow name="session4Flow" doc:id="970d9dbd-16f8-47d4-8044-8cb68c081955" >
+		<http:listener doc:name="Listener" doc:id="dad80252-a871-4823-af5f-fc69d3849177" config-ref="HTTP_Listener_config3" path="flowref"/>
+		<flow-ref doc:name="Flow Reference" doc:id="8d10c567-c7ca-4bd5-9675-7761610b834b" name="Private_flow"/>
+	</flow>
+	<flow name="Private_flow" doc:id="03c17a95-fe4c-4521-b0b8-e4fe6b0736fe" >
+		<set-payload value='#["hi" ++ attributes.queryParams.name as String]' doc:name="private flow Payload" doc:id="3ce42f5d-efc5-4ac7-9f1c-a61e05330b21" />
+	</flow>
+	<sub-flow name="session4Sub_Flow" doc:id="72399cdd-df21-497f-b3e3-afd876ce1b01" >
+		<set-payload value='#["you are in sub flow"]' doc:name="sub folw Payload" doc:id="ef3ca9a5-56a2-4d89-b130-6146cf98f705" />
+	</sub-flow>
+</mule>

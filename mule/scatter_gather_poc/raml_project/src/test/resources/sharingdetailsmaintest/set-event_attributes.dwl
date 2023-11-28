@@ -1,0 +1,40 @@
+{
+  "headers": {
+    "host": "localhost:8081",
+    "connection": "keep-alive",
+    "sec-ch-ua": "\".Not/A)Brand\";v=\"99\", \"Google Chrome\";v=\"103\", \"Chromium\";v=\"103\"",
+    "sec-ch-ua-mobile": "?0",
+    "authorization": "Basic VHJ1c3RpZDoxMjM=",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",
+    "client_id": "b8c49639d50547b3880ca5842a77f96d",
+    "cache-control": "no-cache",
+    "x-ip_address": "10.68.90.58",
+    "postman-token": "6f62b59d-cc7f-7d0c-47c2-f6a16b7cf706",
+    "client_secret": "c559FBb4bFf14233a0A040151dCd885C",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "accept": "*/*",
+    "sec-fetch-site": "none",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-dest": "empty",
+    "accept-encoding": "gzip, deflate, br",
+    "accept-language": "en-US,en;q=0.9"
+  },
+  "clientCertificate": null,
+  "method": "GET",
+  "scheme": "http",
+  "queryParams": {
+    "vendor": "\"01\""
+  },
+  "requestUri": "/api/dbtest?vendor=\"01\"",
+  "queryString": "vendor=\"01\"",
+  "version": "HTTP/1.1",
+  "maskedRequestPath": "/dbtest",
+  "listenerPath": "/api/*",
+  "relativePath": "/api/dbtest",
+  "localAddress": "/127.0.0.1:8081",
+  "uriParams": {},
+  "rawRequestUri": "/api/dbtest?vendor=%2201%22",
+  "rawRequestPath": "/api/dbtest",
+  "remoteAddress": "/127.0.0.1:61043",
+  "requestPath": "/api/dbtest"
+}

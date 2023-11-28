@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="085690b0-1850-4af8-936e-8591278a0fca" >
+		<http:listener-connection host="localhost" port="8081" />
+	</http:listener-config>
+	<flow name="mule_session3Flow" doc:id="80761db7-ef52-4a0d-8626-c3d3f6bf9c47" >
+		<http:listener doc:name="Listener" doc:id="39d45f0b-b9d0-4854-a970-d82d261df652" config-ref="HTTP_Listener_config" path="session3"/>
+		<set-payload value='#["hello welcome"]' doc:name="Set Payload" doc:id="c06e4d6d-6b2f-487b-97b5-fa296598e822" />
+		<flow-ref doc:name="Flow Reference" doc:id="cfc43946-2299-4976-948a-be4061b1a53b" name="mule_session3Flow1"/>
+	</flow>
+	<flow name="mule_session3Flow1" doc:id="f866df6e-1525-4b66-b8cd-f8d76aaf9455" >
+		<http:listener doc:name="Listener" doc:id="25721468-1e41-4a9b-88cb-ee9be51f196d" config-ref="HTTP_Listener_config" path="sports"/>
+		<set-payload value='#["welcome to sports request"]' doc:name="Set Payload" doc:id="2485940e-69b9-4524-8429-8fc73bab4f43" />
+	</flow>
+</mule>

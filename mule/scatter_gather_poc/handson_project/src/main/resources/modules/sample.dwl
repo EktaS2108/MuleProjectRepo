@@ -1,0 +1,1 @@
+fun convert(string0)=upper(string0)

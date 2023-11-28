@@ -1,0 +1,51 @@
+#%RAML 1.0
+title: Test1_API
+/search:
+  get:
+    queryParameters:
+      keyword:
+        description: keyword is queryparam,desc gives details
+        type: string
+        minLength: 2
+        maxLength: 10
+    responses:
+      200:
+        body:
+          application/xml:
+            example:
+              {"message":"hello successful"}
+  post:
+    queryParameters:
+      keyword:
+        description: keyword is queryparam,desc gives details
+        type: string
+        minLength: 2
+        maxLength: 10
+    responses:
+      200:
+        body:
+          application/xml:
+            example: #include examples/search.raml
+          
+              
+                        
+/new:
+  post:
+    queryParameters:
+      country:
+        required: false
+    body:
+      application/json:
+        properties:
+          username:
+            maxLength: 10
+    responses:
+      201:
+        body:
+          application/json:
+            example:
+              {"news":"breaking new"}
+
+              
+      
+                

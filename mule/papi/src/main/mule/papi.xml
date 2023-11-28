@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:bti="http://www.mulesoft.org/schema/mule/ee/bti" xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:a-ritem="http://www.mulesoft.org/schema/mule/a-ritem" xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway" xmlns:sockets="http://www.mulesoft.org/schema/mule/sockets" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/sockets http://www.mulesoft.org/schema/mule/sockets/current/mule-sockets.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd
+http://www.mulesoft.org/schema/mule/a-ritem http://www.mulesoft.org/schema/mule/a-ritem/current/mule-a-ritem.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.mulesoft.org/schema/mule/ee/bti http://www.mulesoft.org/schema/mule/ee/bti/current/mule-bti-ee.xsd">
+	<vm:config name="VM_Config1" doc:name="VM Config" doc:id="7dfd8c74-2813-4ee4-8736-21a5f609143c" >
+		<vm:connection >
+			<reconnection >
+				<reconnect />
+			</reconnection>
+		</vm:connection>
+		<expiration-policy maxIdleTime="1" timeUnit="HOURS" />
+		<vm:queues >
+			<vm:queue queueName="account" queueType="PERSISTENT"/>
+			<vm:queue queueName="vm2" />
+		</vm:queues>
+	</vm:config>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="fd1eb730-6cc5-45b3-b50c-d3714922c06e" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<validation:config name="Validation_Config" doc:name="Validation Config" doc:id="b37f9cbb-8617-46cd-8800-20b61c5e5963" />
+	<validation:config name="Validation_Config1" doc:name="Validation Config" doc:id="3531577b-2e91-42d7-bc98-6274121405c6" />
+	<api-gateway:autodiscovery apiId="18664530" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="3e306c16-bcf1-44d7-bbda-e6d328776284" flowRef="papiFlow" />
+	<file:config name="File_Config" doc:name="File Config" doc:id="10e31ef8-e669-47d5-bd74-59a5a41ba040" >
+	</file:config>
+	<vm:config name="VM_Config2" doc:name="VM Config" doc:id="4ae3f71f-47b2-4313-93da-fc95d0c1f0bb" >
+		<vm:connection />
+		<vm:queues >
+			<vm:queue queueName="2" />
+		</vm:queues>
+	</vm:config>
+	<bti:transaction-manager doc:name="Bitronix Transaction Manager" doc:id="1e9f7c7f-5fa2-4f22-8420-48d5dac4b0ff" />
+	<flow name="papiFlow" doc:id="983be7e3-5eef-46b1-9b58-93d375de8298" >
+		<http:listener doc:name="Listener" doc:id="8723248f-e6cf-4ecd-b4e1-f67480c03d01" config-ref="HTTP_Listener_config" path="/vm_papi"/>
+		<vm:publish queueName="account" doc:name="Publish" doc:id="47438a86-7d9a-4d74-855b-4be338c2543c" config-ref="VM_Config1" sendCorrelationId="ALWAYS" correlationId="abc"/>
+		<logger level="INFO" doc:name="correlationId" doc:id="99b40d37-e12a-4734-b76f-b6756d709fee" message='#["id --" ++ correlationId]'/>
+	</flow>
+	<flow name="papiFlow1" doc:id="08ee8bf4-607c-46d3-9406-fc8de812a9f6" initialState="stopped">
+		<vm:listener doc:name="Listener" doc:id="5638c01b-f2dd-4555-8c5d-ff9f73391339" config-ref="VM_Config1" queueName="account" transactionalAction="ALWAYS_BEGIN">
+			
+			<redelivery-policy maxRedeliveryCount="3"/>
+			<reconnect />
+		</vm:listener>
+		<file:write doc:name="Write" doc:id="15e73029-a6e3-4b65-b6aa-0b27f567481e" path="C:\Users\ESL5\Desktop\dw.txt" mode="APPEND" config-ref="File_Config"/>
+		<validation:is-not-empty-collection doc:name="Is not empty collection" doc:id="552b0eb8-6a68-4447-b2d3-1f108dd4060d" config-ref="Validation_Config1" />
+		<vm:publish doc:name="Publish" doc:id="4c055ff5-ab95-4fc6-9aa2-d1eb38379b06" config-ref="VM_Config2" queueName="vm2"/>
+		<logger level="INFO" doc:name="correlationId" doc:id="05e1b444-9b01-4dfb-b0df-625995fcd8f8" message='#["id --" ++ correlationId]'/>
+		<logger level="INFO" doc:name="Logger" doc:id="17b218f2-63e9-4d02-b65a-d93a272123e5" message="#[payload]"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="6da1dc8b-deff-4ae5-bca8-d08a86f738b6" type="FILE:CONNECTIVITY, VALIDATION:EMPTY_COLLECTION, EXPRESSION">
+				<vm:publish queueName="account" doc:name="Publish" doc:id="84485ed6-7f8d-4c64-b6ea-87d71866377a" config-ref="VM_Config1"/>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="papiFlow3" doc:id="e8df2ce3-07f6-45bd-a84b-d58e855fe2ca" >
+		<vm:listener queueName="vm2" doc:name="Listener" doc:id="249aaf1a-4dcd-4174-8fbe-3f720a0186f9" config-ref="VM_Config1"/>
+		<logger level="INFO" doc:name="Logger" doc:id="7b228006-8f68-4208-b212-c97a317fdced" message="#[payload]"/>
+	</flow>
+	<flow name="papiFlow2" doc:id="2c6c78e5-0d77-4085-a17e-a0899d20177f" initialState="stopped">
+		<http:listener doc:name="Listener" doc:id="02c8a134-747d-4e77-8c9d-3aac333fcc5d" config-ref="HTTP_Listener_config" path="/consume"/>
+		<vm:consume queueName="account" doc:name="Consume" doc:id="7aa9df4c-1c11-4094-bf46-f94275b13be9" config-ref="VM_Config1"/>
+		<logger level="INFO" doc:name="Logger" doc:id="704c3a59-654d-4967-9ad3-655a0fd0cd57" message='#[payload]'/>
+	</flow>
+	<flow name="Copy_of_papiFlow" doc:id="611a4a62-f669-4d3d-ae63-713d702abd5f" initialState="started" >
+		<vm:listener queueName="account" doc:name="Copy_of_Listener" doc:id="51406149-6e4e-4649-9271-94ea99de2e14" config-ref="VM_Config1">
+			<reconnect />
+		</vm:listener>
+		<file:write doc:name="Copy_of_Write" doc:id="a0fbb3e6-2774-4280-968f-e747dd3127f6" config-ref="File_Config" path="C:\Users\ESL5\Desktop\dw.txt" mode="APPEND" />
+		<validation:is-not-empty-collection doc:name="Copy_of_Is not empty collection" doc:id="2a6b9779-376f-4692-8ea1-ab4e1318f678" config-ref="Validation_Config1" />
+		<vm:publish queueName="VM2" doc:name="Copy_of_Publish" doc:id="dbec09e3-0917-457d-8b8b-8335e3324c0a" config-ref="VM_Config1" />
+		<logger level="INFO" doc:name="Copy_of_correlationId" doc:id="ecbb43b2-d3c9-44d9-a69a-74b1d91eab53" message='#["id --" ++ correlationId]' />
+		<logger level="INFO" doc:name="Copy_of_Logger" doc:id="67c5be85-62b7-47ec-810d-146465f96415" message="#[payload]" />
+		<error-handler>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="Copy_of_On Error Propagate" doc:id="31b1d5a3-7bc0-45a1-98c1-9ce477cefaeb" type="FILE:CONNECTIVITY, VALIDATION:EMPTY_COLLECTION, EXPRESSION" >
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="Copy_of_papiFlow1" doc:id="1b82f536-e5a8-4b66-b807-704b6c678b13" >
+		<http:listener doc:name="Copy_of_Listener" doc:id="847ce525-4667-4766-8b75-63e063e54052" config-ref="HTTP_Listener_config" path="/vm_pubsub" />
+		<vm:publish-consume doc:name="Publish consume" doc:id="1b59f2af-5984-4c80-8ff2-a79e233c2be5" config-ref="VM_Config1" queueName="account" timeoutUnit="MINUTES"/>
+		<logger level="INFO" doc:name="Copy_of_correlationId" doc:id="8f0d7319-a4cc-42ae-ae02-c269de504c67" message='#["id --" ++ correlationId]' />
+	</flow>
+</mule>

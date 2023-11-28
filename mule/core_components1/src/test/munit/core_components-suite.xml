@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="core_components-suite.xml" />
+	<munit:test name="choicerouter-test1" doc:id="9d569113-2306-4b56-a6ae-1d867f07411a" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Set Payload" doc:id="09ad9177-ad05-46ee-b9d8-38cb50d7445a" processor="set-payload">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="ddcd2766-67d4-4484-9c7b-23368f83eb2c" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json --- readUrl('classpath://choiceroutertest1\mock_payload.dwl')]" mediaType="application/json" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Input" doc:id="79421e79-e5ed-4fe7-9b02-b1c22cae4bab" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://choiceroutertest1\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				<munit:attributes value="#[readUrl('classpath://choiceroutertest1\set-event_attributes.dwl')]" />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to choicerouter" doc:id="2587f575-fc12-400a-a19f-4f26b68a7f6b" name="choicerouter"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="e7cb188e-e291-48e2-9cab-214df24fd028" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import choiceroutertest1::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

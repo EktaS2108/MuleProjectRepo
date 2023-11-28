@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="callingaflowhavingerrorresponseinhttplistener" doc:id="acceff2d-a980-4900-b900-976c596d8b1b" >
+		<http:listener doc:name="Listener" doc:id="0b37760c-ca6e-46c2-a84f-858121d41638" config-ref="HTTP_Listener_config" path="/flowref">
+			<http:error-response >
+				<http:body ><![CDATA[#[payload]]]></http:body>
+			</http:error-response>
+		</http:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="d0a84377-7bb8-4fb5-b65f-4729de20b22f" message="#[payload]"/>
+		<flow-ref doc:name="Flow Reference" doc:id="b1a6ffd2-a285-4a26-9ccf-f6e9c8696e53" name="validation_moduleFlow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="18b8324c-fb4e-411d-918e-c8edb67563aa" message="#[payload]"/>
+	</flow>
+	<flow name="flowref_pocFlow" doc:id="b206a674-23a5-48e7-95ea-afbfd1d277ad" >
+		<http:listener doc:name="Listener" doc:id="702b5985-72c6-45ed-8657-20f6799b6efb" config-ref="HTTP_Listener_config" path="/flowref1"/>
+		<logger level="INFO" doc:name="Logger" doc:id="06e54b25-fedd-42c3-8bf0-ccf851827828" />
+		<try doc:name="Try" doc:id="2f44bed5-cd9d-485f-8422-0df05270679a" >
+			<flow-ref doc:name="Flow Reference" doc:id="06a72718-2f40-4e9d-a2d3-a394b6dfa8f1" name="validation_moduleFlow1" />
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="c68c4c68-5f22-43bb-b77b-de3895cdc6d3" type="ANY"/>
+			</error-handler>
+		</try>
+		<logger level="INFO" doc:name="Logger" doc:id="c0990642-0c8d-4e24-8fa0-c4207cb3e01a" message="#[payload]"/>
+	</flow>
+</mule>

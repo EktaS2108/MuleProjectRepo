@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="c2060cd2-8f54-434c-bfb6-4ed92b69ced2" >
+		<http:listener-connection host="localhost" port="${http.port}" />
+	</http:listener-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="139ecc46-eb8d-473a-ab90-47977dd4a30c" />
+	<configuration-properties doc:name="Configuration properties" doc:id="28ac0362-5df0-4743-b195-6f6fcd9b6ae6" file="config.properties" />
+	<flow name="session_4_part2Flow" doc:id="1c88eeaa-b6e6-43b8-ba78-7ccf400f979d" >
+		<http:listener doc:name="Listener" doc:id="217839fc-9e6e-4c57-8e64-bc519e8f9820" config-ref="HTTP_Listener_config" path="/session4"/>
+		<flow-ref doc:name="Flow Reference" doc:id="849f5eb9-58c5-413a-99f2-8b82d43114ed" name="privateflow"/>
+		<set-variable value='#["flow" ++ (attributes.queryParams.name default "xyz")]' doc:name="var" doc:id="6e4dc3c1-c3bf-4917-9f88-784d0bf87ef1" variableName="var"/>
+		<file:read doc:name="Read" doc:id="2048cda6-cd4d-41e1-a5ee-6c8e0ad54a58" config-ref="File_Config" path="C:\AnypointStudio\studio-workspace\session_4_part2\pom.xml"/>
+		<set-payload value='#["flow" ++ (attributes.queryParams.name default "xyz")]' doc:name="Set Payload" doc:id="1da50838-da92-4b59-a015-7d63b05fbdbb" />
+		<set-payload value="#[vars.&quot;var&quot;++ &quot;&quot; ++ p('message') as String]" doc:name="Set Payload" doc:id="ace46661-854d-47b3-b1a2-0f599cea58cf" />
+	</flow>
+	<flow name="privateflow" doc:id="ba53a0c0-dc60-43dc-acc9-2efbb92f7daf" >
+		<set-payload value='"inside private flow"++"------------"' doc:name="Set Payload" doc:id="46cf36f6-a55a-4dd5-b990-fb6bf192fef1" />
+	</flow>
+	<sub-flow name="Sub_Flow" doc:id="f29c3e10-2973-4976-923e-84f16c506378" >
+		<set-payload value='"inside flow"' doc:name="Set Payload" doc:id="82332766-7980-4d94-ad4a-ec8d4891dde4" />
+	</sub-flow>
+</mule>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="b87216d4-7d88-4eb2-9d1e-08ee8d75b737" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="838bb1fc-b197-47d4-a1c2-58155aa01026" basePath="https://api.openweathermap.org/data/2.5/weather" />
+	<http:request-config name="HTTP_Request_configuration1" doc:name="HTTP Request configuration" doc:id="48789528-d0f6-4c0e-b80a-3dbbba9f9d17" basePath="https://api.openweathermap.org/data/2.5/weather" />
+	<http:request-config name="HTTP_Request_configuration2" doc:name="HTTP Request configuration" doc:id="44700c1d-7f57-40e0-a2f9-0c291da84f2f" basePath="//api.openweathermap.org/data/2.5/weather" />
+	<http:request-config name="HTTP_Request_configuration3" doc:name="HTTP Request configuration" doc:id="6d574691-f72d-4cfa-adfc-089978116d96" basePath="https://api.openweathermap.org/data/2.5/weather" >
+		<http:request-connection protocol="HTTPS" />
+	</http:request-config>
+	<flow name="session6_externalsystemsFlow" doc:id="4c5355f8-2270-44a2-a01c-faf7b9a486fc" >
+		<http:listener doc:name="Listener" doc:id="f044cb83-ed29-4df9-83ce-b0fdb951f9db" config-ref="HTTP_Listener_config" path="/session6"/>
+		<set-variable value="#[payload.city]" doc:name="Set Variable" doc:id="9b71b224-9bd1-4f8f-97ae-fe620eaf362b" variableName="city" />
+		<http:request method="GET" doc:name="Request" doc:id="e29dfe46-b3db-4e43-a890-6508d7cb9111" config-ref="HTTP_Request_configuration3" url="https://api.openweathermap.org/data/2.5/weather">
+			<http:body ><![CDATA[#[payload.city]]]></http:body>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	q : payload.city,
+	appid : attributes.queryParams.key
+}]]]></http:query-params>
+			<http:response-validator >
+				<http:success-status-code-validator values="200..499" />
+			</http:response-validator>
+		</http:request>
+		<validation:is-not-null doc:name="Is not null" doc:id="2fe9ffc1-ca3c-4d74-84b5-0dbec1cdcdce" value="#[vars.city]"/>
+		<ee:transform doc:name="Transform Message" doc:id="b0b44fe7-3f13-4372-bda7-e54a9ed27996">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="ff8bc1a5-55f3-46ef-967e-2d4e5a4266ab" >
+			<when expression='#[vars.city=="delhi"]'>
+				<set-payload value='#["delhi":payload]' doc:name="Set Payload" doc:id="84f8b670-ce24-4214-85e7-0d76c9a4857f" />
+			</when>
+			<otherwise >
+				<set-payload value='#["weather1": payload]' doc:name="Set Payload" doc:id="240a66f1-a792-4f28-a305-a177b0ff26e0" />
+			</otherwise>
+		</choice>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="871cf7f3-1db8-462b-8925-ec8601e79cc2" >
+			<route >
+				<ee:transform doc:name="Transform Message" doc:id="074d4c8b-9ae6-493a-9f7a-bdb6bbcef7ce" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+"first scatter":  payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</route>
+			<route >
+				<ee:transform doc:name="Transform Message" doc:id="456a3b05-dd60-4837-899d-d1072cf14feb">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+"second scatter":  payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</route>
+		</scatter-gather>
+		<ee:transform doc:name="Transform Message" doc:id="6e8180e2-207e-4cf9-9d74-a7f935d45104">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+			<ee:variables>
+			</ee:variables>
+		</ee:transform>
+	</flow>
+</mule>

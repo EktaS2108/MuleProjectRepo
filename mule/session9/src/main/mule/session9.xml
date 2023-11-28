@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="028beb62-b385-4d53-ab3a-4dd988cc5683" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="session9Flow" doc:id="7af8219d-0e64-4d7a-91e2-a5a7866e2fd6" >
+		<http:listener doc:name="Listener" doc:id="4ffed3a2-27dc-42a0-ac67-b6d820a5d622" config-ref="HTTP_Listener_config" path="/session9"/>
+		<set-payload value='#[[1,2,3,4,5]]' doc:name="[1,2,3,4,5]" doc:id="06e4573a-7ddd-4513-8fec-dfffb7c88684" />
+		<set-variable value="#[[]]" doc:name="Set Variable" doc:id="63737ba2-e686-4805-a082-7fb23de8d9db" variableName="var"/>
+		<foreach doc:name="For Each" doc:id="9881ac68-e7dc-440d-81bb-7fc6831305bb" >
+			<set-payload value="#[payload *10]" doc:name="Set Payload" doc:id="103ac601-dbfb-46d9-9bbc-d0918fc631d9" />
+			<set-variable value='#[vars."var" + payload]' doc:name="Set Variable" doc:id="2cdee208-21ca-40ab-adbb-df9611581d40" variableName="var"/>
+			<logger level="INFO" doc:name="Logger" doc:id="ca344e4c-2690-4878-9781-46376eda733e" message='#[vars."var"]'/>
+		</foreach>
+		<ee:transform doc:name="Transform Message" doc:id="4ab8f6b7-a16d-4585-ac56-20d0d42be977" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"payload":payload,
+	"var":vars."var"
+	}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="session9Flow1" doc:id="66f0ecc9-71c0-4315-a6ba-0cd015950e78" >
+		<http:listener doc:name="Listener" doc:id="f59c97ee-2ee5-44ae-8e4e-3d1a71c6c5a0" config-ref="HTTP_Listener_config" path="/session9batch"/>
+		<set-payload value="#[[1,2,3,4,5]]" doc:name="Set Payload" doc:id="1ab84ff0-5b1b-4c26-85bf-237713e6f743" />
+		<batch:job jobName="session9Batch_Job" doc:id="29d77c07-3105-4c1b-98c8-7520021a1568" >
+			<batch:process-records >
+				<batch:step name="Batch_Step" doc:id="33570391-5bb0-41cf-a9a6-df160b330cfc" acceptExpression="#[ payload&gt;3]">
+					<set-payload value="#[payload*10]" doc:name="Set Payload" doc:id="7c498ee2-4884-4278-a12d-ef4204fc8388" />
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="900bc4eb-b3ab-4d6b-8f74-0dbc7b86eb67" size="2">
+						<ee:transform doc:name="Transform Message" doc:id="90eb8d9d-0fa5-4ac4-9844-f05e8d2bef53">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+						<logger level="INFO" doc:name="Logger" doc:id="cc975bcf-1c9c-47cc-a986-b9dac092847a" message="#[payload]"/>
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<ee:transform doc:name="Transform Message" doc:id="e37141e1-f936-46c1-8f13-ea9e8c293f19" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</batch:on-complete>
+		</batch:job>
+	</flow>
+	<flow name="session9Flow2" doc:id="4974c823-d31d-4bc4-9e0f-92bf929518bd" >
+		<scheduler doc:name="Scheduler" doc:id="fd47a0dc-11f2-4cfb-a0e5-6e42939a0f04" >
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="Logger" doc:id="2b93bce6-997a-493f-bcec-031bffb62fc6" message="#[now()]"/>
+	</flow>
+</mule>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="4c72dbac-a06a-4aeb-9d89-054142730051" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="validation_moduleFlow1" doc:id="40c10a75-8a2d-4169-b05c-b8862489a7f7" >
+		<http:listener doc:name="Listener" doc:id="6581ec57-4818-4799-85f5-77415c1c9d79" config-ref="HTTP_Listener_config" path="/val1"/>
+		<logger level="INFO" doc:name="Logger" doc:id="5715e129-4609-4f81-988d-fcb9113fb9d1" message="#[payload]"/>
+		<validation:is-null doc:name="Is null" doc:id="7d0cbe6d-c2f3-4b72-b9a5-6d20d05797a7" message='"not null"' value="#[payload]"/>
+	</flow>
+	<flow name="validation_moduleFlow2" doc:id="5137cb5c-83cd-4e2d-be58-4ada2c46f728" >
+		<http:listener doc:name="Listener" doc:id="d28280af-7e19-49c8-9143-aade9a1dc769" config-ref="HTTP_Listener_config" path="/val2"/>
+		<validation:is-number numberType="INTEGER" doc:name="Is number" doc:id="be1216f9-56a3-4f7c-a626-d73567dedcb5" value="#[payload]" minValue="#[2]" maxValue="#[9]" message='"not expected number'/>
+	</flow>
+	<flow name="validation_moduleFlow" doc:id="bf870de2-f966-4c7c-a97f-a20bedd918f8" >
+		<http:listener doc:name="Listener" doc:id="211dc985-3d30-4a66-b435-941288b1e853" config-ref="HTTP_Listener_config" path="/val3">
+			<http:error-response statusCode="#[vars.httpStatus]" >
+				<http:body ><![CDATA[#[payload]]]></http:body>
+			</http:error-response>
+		</http:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="662cbfc9-91e0-4fc1-8c7f-94781e9605fe" message="#[sizeOf(payload)]"/>
+		<validation:all doc:name="All" doc:id="9b7ec48b-a6e2-413f-b495-184a79342b4c" >
+			<validation:validate-size doc:name="Validate size" doc:id="55c70aff-26df-4e6b-9a43-9595459aaa6c" value="#[payload]" min="#[3]" max="#[9]" message='#["not expected size"]' />
+			<validation:is-not-empty-collection doc:name="Is not empty collection" doc:id="bc2bc8dc-5eb0-4e63-bc86-508744a43214" />
+		</validation:all>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="0179ae1c-4925-4238-9592-d69fb360ad2b" type="ANY">
+				<ee:transform doc:name="Transform Message" doc:id="0a110701-c00b-48d2-a7bb-cc93f0f22700" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	
+	error_type:error.errorType.identifier,
+	error_description: error.description
+	
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="httpStatus" ><![CDATA[400]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="Copy_of_validation_moduleFlow" doc:id="0d443c7e-8cbd-4690-b7cd-52554453b83e" >
+		<http:listener doc:name="Copy_of_Listener" doc:id="241f0567-a66a-4f4e-bd86-cc3b90265b71" config-ref="HTTP_Listener_config" path="/val4" >
+			<http:error-response statusCode="#[vars.httpStatus]" >
+				<http:body ><![CDATA[#[payload]]]></http:body>
+			</http:error-response>
+		</http:listener>
+		<logger level="INFO" doc:name="Copy_of_Logger" doc:id="7e24bf74-a824-4b36-8e7c-493ef389dada" message="#[sizeOf(payload)]" />
+		<validation:any doc:name="Any" doc:id="da20fc22-3aa0-463f-908e-bb60865e2f02" >
+			<validation:is-not-empty-collection doc:name="Copy_of_Is not empty collection" doc:id="27588cbe-9b89-469d-9297-99018ceaa9c4" />
+			<validation:validate-size doc:name="Copy_of_Validate size" doc:id="26dd00ae-2381-4905-a700-e4c03792414a" value="#[payload]" min="#[3]" max="#[9]" message='#["not expected size"]' />
+		</validation:any>
+		<logger level="INFO" doc:name="Logger" doc:id="91e09976-354c-4c52-935d-81feefedef87" message='#["any of the val succeed"]'/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="Copy_of_On Error Propagate" doc:id="169f51ed-0444-4186-a836-8e82ee5c84dc" type="ANY" >
+				<ee:transform doc:name="Copy_of_Transform Message" doc:id="9b18babe-5da9-4269-90c0-18e6c5635294" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	
+	error_type:error.errorType.identifier,
+	error_description: error.description
+	
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="httpStatus" ><![CDATA[400]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>

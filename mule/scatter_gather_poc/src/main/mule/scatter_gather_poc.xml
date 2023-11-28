@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="9e757a24-8581-4a3f-91e5-629dbc574011" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<vm:config name="VM_Config1" doc:name="VM Config" doc:id="1f20aa98-fdcc-44ee-8a8f-a681523c4cad" >
+		<vm:connection />
+		<vm:queues >
+			<vm:queue queueName="vm1" queueType="PERSISTENT" />
+		</vm:queues>
+	</vm:config>
+	<flow name="scatter_gather_pocFlow" doc:id="d2a25980-c016-4b27-a259-83893d34c206" >
+		<http:listener doc:name="Listener" doc:id="199fe9c5-5454-4504-bc32-af29f9683fbe" config-ref="HTTP_Listener_config" path="/mainroute"/>
+		<try doc:name="Try" doc:id="55ba2b11-c10b-4d78-96ba-837e43ad4381" transactionalAction="ALWAYS_BEGIN">
+			<scatter-gather doc:name="Scatter-Gather" doc:id="d43ae52b-6f3b-44b8-b490-7aca8032fdeb" >
+				<route >
+					<flow-ref doc:name="Flow Reference" doc:id="d3e66376-461e-4258-96cf-04fb6fc7c7b3" name="scatter_gather_pocFlow2"/>
+				</route>
+				<route >
+					<flow-ref doc:name="Flow Reference" doc:id="23983229-12cb-4212-900b-109d40bfa408" name="scatter_gather_pocFlow1"/>
+				</route>
+			</scatter-gather>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="1c56a818-15b4-4c12-b06d-3d0e1668e8bf" type="ANY">
+					<logger level="INFO" doc:name="Logger" doc:id="83cee635-6a7b-40c9-b997-a6dfd3425788" message='"error in route execution"'/>
+					<logger level="INFO" doc:name="Logger" doc:id="d3b546a3-27e2-4260-b539-99c8a4b0f23a" message="#[payload]"/>
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		<logger level="INFO" doc:name="Logger" doc:id="9a4e0ef2-3d61-4b50-9792-0b274c410bb7" message="#[payload]"/>
+	</flow>
+	<flow name="scatter_gather_pocFlow_normal" doc:id="10c64f11-f347-405d-b2c9-6c5b48f97478" >
+		<http:listener doc:name="Listener" doc:id="70b8e516-a946-4bf6-a037-ec775a6fd71f" config-ref="HTTP_Listener_config" path="/mainroute1"/>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="4ed3e622-bdda-4c47-8d14-849c1cbf0754">
+				<route>
+					<flow-ref doc:name="Flow Reference" doc:id="5c93a9d4-d268-40f4-a9e8-8ff59a7fadff" name="scatter_gather_pocFlow1" />
+				
+</route>
+				<route>
+					<flow-ref doc:name="Flow Reference" doc:id="2d9348ff-d4a7-406e-b5c4-08f2731a1ccf" name="scatter_gather_pocFlow2" />
+				
+</route>
+			</scatter-gather>
+		<logger level="INFO" doc:name="Logger" doc:id="f415849a-13e6-49f4-9288-ed0528b9e031" message="#[%dw 2.0 &#10;output application/json&#10;---&#10;payload]"/>
+	</flow>
+	<flow name="scatter_gather_pocFlow1" doc:id="d4806bd4-b514-410b-b246-9e95ae652a38" >
+		<logger level="INFO" doc:name="Logger" doc:id="0299cf09-0767-46c8-9f8f-9f20fdf8666f" message='"route 1"'/>
+		<set-payload value='#["scatter_gather_pocflow1"]' doc:name="Set Payload" doc:id="fb2bb9ff-fe1f-4a16-b7b4-1c772a40b5b1" />
+		<raise-error doc:name="Raise error" doc:id="7ef90654-c932-4f3d-b61b-d53024264f90" type="ANY" description="exception raised"/>
+	</flow>
+	<flow name="scatter_gather_pocFlow2" doc:id="6a906660-81f5-44da-9360-f2455d7559ba" initialState="started">
+		<logger level="INFO" doc:name="Logger" doc:id="be1df7a2-c385-41b9-b24f-df8c4a04f263" message='"route 2"'/>
+		<set-payload value='#["scatter_gather_pocflow2"]' doc:name="Set Payload" doc:id="3fcc54c7-ce4f-4b59-92d6-5bd1128dd365" />
+		<vm:publish doc:name="Publish" doc:id="2d9d7d42-1626-4197-a516-d8522b62b1fe" config-ref="VM_Config1" sendCorrelationId="ALWAYS" queueName="vm1"/>
+	</flow>
+	<flow name="scatter_gather_pocFlow3" doc:id="6f2082d6-e7d1-458e-948a-19d08f6e66f3" >
+		<vm:listener doc:name="Listener" doc:id="90ae2b05-5f48-44af-8842-c1c2d50b38c9" config-ref="VM_Config1" queueName="vm1"/>
+		<logger level="INFO" doc:name="Logger" doc:id="18df58d6-8c4b-446d-9208-8de3b9e46664" message="#[payload]"/>
+	</flow>
+</mule>

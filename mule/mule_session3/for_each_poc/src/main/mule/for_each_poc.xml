@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="d0355b44-2b9d-42f7-a32e-06a8efb6067b" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="for_each_pocFlow" doc:id="a610240d-f442-4907-9338-3441e4f03935" >
+		<http:listener doc:name="Listener" doc:id="618e4a0d-e1e6-46b0-90fa-bfd4ad61e1cb" config-ref="HTTP_Listener_config" path="/foreach"/>
+		<set-payload value="#[[1,5,7]]" doc:name="Set Payload" doc:id="39b52d2a-329a-45a9-ba1f-f009d7a2f383" />
+		<logger level="INFO" doc:name="Logger" doc:id="97065b47-7604-438f-90a3-3b3a832c4da8" message='#["beefor for each"]'/>
+		<foreach doc:name="For Each" doc:id="380a4de9-072e-4236-8555-c4d39fe1a8da" >
+			<logger level="INFO" doc:name="Logger" doc:id="60965abb-b499-43da-81d5-c48621be7cfb" message='"inside loop"'/>
+			<set-payload value="#[payload * 2]" doc:name="Set Payload" doc:id="803825d3-ebca-48ba-b4a6-095518aa3aa7" />
+			<logger level="INFO" doc:name="Logger" doc:id="f11451e7-868e-490f-8bf5-a81777b1c6bd" message='#["after loop--" ++ payload]'/>
+		</foreach>
+		<ee:transform doc:name="Transform Message" doc:id="ee579c8c-0f84-48bb-b3f1-3e9f7da001d5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="ce3468f0-e0b0-40c5-bc2b-b50628d13c8d" message='#[%dw 2.0&#10;output application/json&#10;---&#10;&#10;payload]'/>
+	</flow>
+	<flow name="for_each_pocFlow1" doc:id="f8975fa4-18c3-45c6-b564-1d840a42089a" >
+		<http:listener doc:name="Listener" doc:id="f44c0bdc-42ae-4d53-8d65-0c680bdba6e7" config-ref="HTTP_Listener_config" path="/parallelforeach"/>
+		<set-payload value='#[[1,"a",7]]' doc:name="Set Payload" doc:id="7db8445d-2a65-4663-a0d2-14f8a4f47a98" />
+		<logger level="INFO" doc:name="Logger" doc:id="d7d7c2a4-49d3-4cb1-b7a0-5857573460ab" message='#[payload]'/>
+		<parallel-foreach doc:name="Parallel For Each" doc:id="9374d0ee-50e4-488a-989d-c128670111e9">
+			<logger level="INFO" doc:name="Logger" doc:id="8a835622-e3dc-4995-8a54-303e95d30f1d" message='#[payload ++ "inside before setpayload"]'/>
+			<try doc:name="Try" doc:id="b4404f47-010c-4aa4-8d0a-8c3cf8f508b3" >
+				<set-payload value="#[payload *2]" doc:name="Set Payload" doc:id="72a32ed2-511f-4e9d-8368-ff5239f0fb4e" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="f38476ef-1bba-44aa-b78c-6071f6b4b27a" >
+						<logger level="INFO" doc:name="Logger" doc:id="99323532-3495-40e8-9af7-43078fd2b163" message="#[payload]"/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+			<logger level="INFO" doc:name="Logger" doc:id="fdba06be-1efd-4a96-b10f-dc8cdef735fb" message='#[payload]'/>
+		</parallel-foreach>
+		<ee:transform doc:name="Transform Message" doc:id="1261445d-d954-4907-bb9c-ec67514ac7f1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[
+%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="d6398b31-41b8-4166-8835-7686e7384845" message="#[%dw 2.0&#10;output application/json&#10;---&#10;&#10;payload]"/>
+	</flow>
+</mule>

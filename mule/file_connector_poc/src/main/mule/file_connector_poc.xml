@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<file:config name="File_Config" doc:name="File Config" doc:id="3ecc1b9a-77b9-4fa4-af8c-22abfabb14b5" >
+		<file:connection/>
+	</file:config>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="a18f9a29-0b49-4965-8e1c-4defc42d73f9" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<file:config name="File_Config4" doc:name="File Config" doc:id="acad16ea-b9b0-4bd8-84e2-02ec6ef31022" >
+		<file:connection workingDir="C:\Users\ESL5\Desktop\files\" />
+	</file:config>
+	<file:config name="File_Config5" doc:name="File Config" doc:id="1b182cfa-8ec8-4449-9584-03009f4e8d5e" >
+		<file:connection workingDir="C:\Users\ESL5\Downloads\" />
+	</file:config>
+	<file:config name="File_Config1" doc:name="File Config" doc:id="85d85f5e-2006-45b4-b393-43adfb6fd4ac" >
+		<file:connection workingDir="C:\Users\ESL5\Desktop\files\" />
+	</file:config>
+	<flow name="file_connector_pocFlow" doc:id="f4f6bd74-2de0-41b7-8616-4a6056b42987" >
+		<http:listener doc:name="Listener" doc:id="ab9d6734-d630-4014-aec0-611039168c40" config-ref="HTTP_Listener_config" path="/file"/>
+		<file:list doc:name="List" doc:id="cfca94c3-0cb4-4af3-adb2-ca2696eeda75" config-ref="File_Config" recursive="true" directoryPath="C:\Users\ESL5\Desktop\files\"/>
+		<logger level="INFO" doc:name="Logger" doc:id="d040badf-9be8-4f46-bf09-3df36096806c" message="#[payload.typedAttributes.fileName]"/>
+		<logger level="INFO" doc:name="Logger" doc:id="b74dd5a5-2135-4547-a43a-1aab83459a8b" message="#[payload]" />
+		<foreach doc:name="For Each" doc:id="58d14004-7266-449e-a257-b7a68454db52" collection="#[payload.typedAttributes.fileName]">
+			<set-variable value="#[payload]" doc:name="Set Variable" doc:id="82e26353-ea6c-4dcb-b03e-6f28f59d2567" variableName="abc" />
+			<file:read doc:name="Read" doc:id="0f46a365-64d6-4e5e-932f-374a327d5ce3" path="#[vars.abc]" config-ref="File_Config1" />
+			<logger level="INFO" doc:name="Logger" doc:id="25223123-c1dd-4eb6-92af-e41967513f17" message='#[((((vars.abc splitBy  "_")[-1]) splitBy  ".")[0])]'/>
+			<file:write doc:name="Write" doc:id="9a1576e4-80a3-4d5e-9257-0428fa43bf0c" config-ref="File_Config5" path='#["C:\\Users\\ESL5\\Downloads\\" ++ ((((vars.abc splitBy  "_")[-1]) splitBy  ".")[0]) ++ "\\" ++ vars.abc]' />
+		</foreach>
+		<set-payload value='#["successfull"]' doc:name="Set Payload" doc:id="f1fcfcea-7470-44d3-87d4-67253e526627" />
+	</flow>
+</mule>

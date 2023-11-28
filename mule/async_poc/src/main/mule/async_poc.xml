@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="67fa8400-740e-4798-9593-c67b58a5545d" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="1adfd8dc-b244-44d1-9f02-47db62ed7b48" />
+	<http:request-config name="HTTP_Request_configuration1" doc:name="HTTP Request configuration" doc:id="e39ebafe-36b3-4e31-9246-a36f8bff1e2f" >
+		<http:request-connection host="localhost" port="8081" />
+	</http:request-config>
+	<flow name="async_pocFlow" doc:id="e12d6165-998f-44b9-ab3e-b7331cfdb8bb" >
+		<http:listener doc:name="Listener" doc:id="09edc7da-3b1b-4b32-8844-f7095a37394b" config-ref="HTTP_Listener_config" path="/asyncpoc"/>
+		<logger level="INFO" doc:name="Logger" doc:id="ad82dfdd-8e2c-4781-9734-55b354d9f3f2" message="#[payload]"/>
+		<async doc:name="Async" doc:id="35503457-9941-4a69-afe2-9742370ea022" >
+			<http:request method="POST" doc:name="Request" doc:id="b38dede3-7328-4970-94a7-10820ca4a561" config-ref="HTTP_Request_configuration1" path="/async2"/>
+		</async>
+		<logger level="INFO" doc:name="Logger" doc:id="c31d0866-a54d-486f-84e5-39db766b64c5" message="#[payload]"/>
+	</flow>
+	<flow name="async_pocFlow1" doc:id="014ceb42-2eba-4418-96d2-8960c334ac87" >
+		<http:listener doc:name="Listener" doc:id="a863b965-e9ba-4cd0-a48c-726fa7ee2005" config-ref="HTTP_Listener_config" path="/async"/>
+		<set-payload value='#["changed payload"]' doc:name="Set Payload" doc:id="08663a15-2913-4292-a4f3-fb0941d559e8" />
+		<logger level="INFO" doc:name="Logger" doc:id="07e6ebc2-4b36-4cca-8964-5e1dc787e70a" message='"from async api call"'/>
+	</flow>
+</mule>

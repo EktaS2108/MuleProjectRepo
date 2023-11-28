@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:peoplesoft="http://www.mulesoft.org/schema/mule/peoplesoft" xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd
+http://www.mulesoft.org/schema/mule/peoplesoft http://www.mulesoft.org/schema/mule/peoplesoft/current/mule-peoplesoft.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="9b6325ae-57cf-4ac9-b39e-82320af80354" >
+		<http:listener-connection host="0.0.0.0" port="${http.port}" />
+	</http:listener-config>
+	<api-gateway:autodiscovery apiId="17917065" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="daf72a2e-88ce-4a41-80bd-c6b204dedf89" flowRef="testFlow" />
+	<configuration-properties doc:name="Configuration properties" doc:id="6b7bad27-d4e1-490e-a4ad-70ad152b7ff9" file="${env}.yaml" />
+	<peoplesoft:config name="PeopleSoft_Config" doc:name="PeopleSoft Config" doc:id="2c541f23-3f8f-4d3f-8c08-0d497e554ffc" >
+		<peoplesoft:connection server="https://fs9qal.dsone.3ds.com/psp/FS9QAL/EMPLOYEE/DS_ECO/h/" username="ADMFI" password="cl0wn*" >
+			<peoplesoft:component-interface-ids />
+		</peoplesoft:connection>
+	</peoplesoft:config>
+	<flow name="testFlow" doc:id="b29dfc5b-943e-40ec-8cea-d4e3ddcf3ccf" >
+		<http:listener doc:name="Listener" doc:id="25ef6abb-98e8-4713-a3c0-490b40739867" config-ref="HTTP_Listener_config" path="/test"/>
+		<set-payload value='#["hello"]' doc:name="Set Payload" doc:id="9b222578-48b4-42d4-8514-27ad8c347cbd" />
+	</flow>
+	<flow name="testFlow1" doc:id="44bd2321-eb2e-4dc1-82b5-8c4cd3848051" >
+		<http:listener doc:name="Listener" doc:id="21dd653b-bca6-4493-ad27-1a1f3b558aec" config-ref="HTTP_Listener_config" path="/test1"/>
+		<set-payload value='#["Hello Ekta"]' doc:name="Set Payload" doc:id="2a764334-bc0f-4595-a991-4aab4e1b1fab" />
+	</flow>
+</mule>

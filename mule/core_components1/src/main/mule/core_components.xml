@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="dc538ab2-e016-4241-af31-7a6470463509" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="201c1b1f-ed9d-42cd-b611-3771db7bce6f" />
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="db10523d-ef11-4de3-a80b-2fe9d075f0f0">
+		<http:request-connection host="localhost" port="8081"/>
+	</http:request-config>
+	<flow name="choicerouter" doc:id="7843d283-1c7e-4043-bd09-19f8e058ee04" >
+		<http:listener doc:name="Listener" doc:id="87ed5028-c647-4c57-8e1e-4fb503f464c9" config-ref="HTTP_Listener_config" path="/core"/>
+		<choice doc:name="Choice" doc:id="2979a7e3-251d-4f25-bf85-29afc81b2fc5" >
+			<when expression="#[payload.'color'==&quot;blue&quot;]">
+				<logger level="INFO" doc:name="Logger" doc:id="38649d1c-96d9-4af2-bb1d-b523f55a8159" message='"blue"'/>
+				<set-payload value="#[payload]" doc:name="Set Payload" doc:id="bb750233-860e-4b8b-9ee7-a43c00a4e7ad" />
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="74d0e807-9f38-4573-a698-593e67a80149" message='"not blue"'/>
+				<set-payload value='#["not blue but "++ payload.color]' doc:name="Set Payload" doc:id="ddcd2766-67d4-4484-9c7b-23368f83eb2c" />
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="Roundrobin" doc:id="6a2e40a6-c211-442c-a03b-250baf6d176a" >
+		<http:listener doc:name="Listener" doc:id="1705bb39-8208-4e14-830d-8c747b173022" config-ref="HTTP_Listener_config" path="rr"/>
+		<ee:transform doc:name="Transform Message" doc:id="331fc6f8-8503-458f-b5b6-ab1075ba1897" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map
+{
+	"id":$.id,
+	"index":$$
+	}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="4ad701fc-28b2-4ea8-9fc5-c80541ea29e7" collection="#[payload]">
+			<round-robin doc:name="Round Robin" doc:id="60dd501e-f4c2-4887-a7ab-0fe8058f9d3d">
+			<route>
+				<logger level="INFO" doc:name="Logger" doc:id="cc9dd643-b1f9-405c-ad9c-9969cc20445a" message='"message route1"++  #[payload]' />
+			</route>
+			<route>
+				<logger level="INFO" doc:name="Logger" doc:id="299effe3-c2e3-4e89-825d-4e09d4dfd511" message='"route2" ++#[payload]' />
+			</route>
+		</round-robin>
+		</foreach>
+	</flow>
+	<flow name="DynamicEvaluate" doc:id="61e23530-990c-4f6e-a986-d45df5a7a119" >
+		<http:listener doc:name="Listener" doc:id="78515f0c-b46d-4d19-9934-102aac9faf68" config-ref="HTTP_Listener_config" path="/evaluate"/>
+		<set-variable value="#[attributes.queryParams.cust]" doc:name="Set Variable" doc:id="ed984387-f695-4200-b1a0-19d45dd20168" variableName="varc"/>
+		<ee:transform doc:name="Transform Message" doc:id="4315abfb-0ad5-4c47-b056-2a7ed12b8d2d" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="varcust" ><![CDATA[%dw 2.0
+output application/java
+var file="dw/$(vars.varc).dwl"
+
+---
+readUrl("classpath://"++ file,"text/plain")]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:dynamic-evaluate doc:name="Dynamic Evaluate" doc:id="b6faee7f-9476-410b-81d0-15d1b1d7b2c9" expression="#[vars.varcust]"/>
+	</flow>
+	<flow name="Scatter" doc:id="89a19faa-5bbd-474c-9254-e695938fd2f4" >
+		<http:listener doc:name="Listener" doc:id="907b0ec4-cbc0-4c6c-a7b3-aa7353b40ca8" config-ref="HTTP_Listener_config" path="/scatter"/>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="f599cd9a-9675-425b-b8e4-0aeb88fac294" >
+			<route >
+				<file:read doc:name="Read" doc:id="32cf782b-b02a-4f58-99dd-0fcb9a942845" config-ref="File_Config" path="C:\Users\ESL5\Desktop\desktop_june_2022\write_error.csv"/>
+				<logger level="INFO" doc:name="Logger" doc:id="b67641a8-2ce4-4d40-a041-63b6fedf8714" message="#[payload]"/>
+			</route>
+			<route >
+				<file:read doc:name="Read" doc:id="0f356a83-24b6-4dc8-87cf-9d08d5c9dfca" config-ref="File_Config" path="C:\Users\ESL5\Desktop\desktop_june_2022\write.csv"/>
+				<logger level="INFO" doc:name="Logger" doc:id="a764e655-e636-4eab-85d6-f47ac3b3bab6" message="#[payload]"/>
+			</route>
+		</scatter-gather>
+		<ee:transform doc:name="Transform Message" doc:id="4b88d495-7831-43f7-9cef-2a20b1cfa1f8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+flatten(payload..payload)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="untilSuccessful" doc:id="d7a22fb3-69c1-40f6-86ed-7ccdc005b2d7" >
+		<http:listener doc:name="Listener" doc:id="3c6a8f34-0b41-4424-a25e-a1e94811c0b7" config-ref="HTTP_Listener_config" path="/until"/>
+		<until-successful maxRetries="2" doc:name="Until Successful" doc:id="a64d34ee-56c4-477a-ba20-bdb5909b95d5" >
+			<http:request method="GET" doc:name="Request" doc:id="896ad33c-59dc-4d70-b803-3e6bd2aa0214" config-ref="HTTP_Request_configuration" path="/scatte2"/>
+		</until-successful>
+	</flow>
+	<flow name="firstsuccessful" doc:id="ad5afd63-b94b-4f22-88ba-b42978c51211" >
+		<http:listener doc:name="Listener" doc:id="fa026c57-fda6-430c-979f-741b8f9215b7" config-ref="HTTP_Listener_config" path="/firstsuccess"/>
+		<first-successful doc:name="First Successful" doc:id="982c6fc4-50fb-4056-bde0-8218e5a2d3f4" >
+			<route >
+				<logger level="INFO" doc:name="Logger" doc:id="c5edfc78-a7c3-4b2e-bf5f-db6bf9c1eaec" message='"primary"'/>
+				<http:request method="POST" doc:name="Request" doc:id="2a060afa-0376-446c-90cf-26c300e07f91" url="http://localhost:8081/rr"/>
+			</route>
+			<route >
+				<logger level="INFO" doc:name="Logger" doc:id="ca453f25-8f36-4ce3-a066-55fd1fcc7801" message='"secondary"'/>
+				<http:request method="GET" doc:name="Request" doc:id="f97a89a3-9d37-4bad-8f5f-fee57343b85a" url="http://localhost:8081/scatter"/>
+			</route>
+		</first-successful>
+	</flow>
+	<flow name="Parsetemplate" doc:id="51dca0a1-10ba-471d-a48e-de81d359ecb2" >
+		<http:listener doc:name="Listener" doc:id="dbdd29dc-a46e-46e4-a7fa-7f341bfd9278" config-ref="HTTP_Listener_config" path="/parse"/>
+		<parse-template doc:name="Parse Template" doc:id="02507938-1c4c-4756-922c-023da25fd8e8" location="C:\Users\ESL5\Desktop\mule\temp.html"/>
+	</flow>
+	<flow name="core_componentsFlow" doc:id="c02e74be-4e51-4b80-a157-165c690c0fef" >
+		<http:listener doc:name="Listener" doc:id="3d9a906b-7f66-4540-92f8-b6065e81f342" config-ref="HTTP_Listener_config" path="/pluck"/>
+		<logger level="INFO" doc:name="Logger" doc:id="c0dfaa98-0dc4-47d1-b95e-64f080f17ebc" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="55ee6474-5fc2-4052-a313-468dc2591473" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload pluck ($)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="ForEach" doc:id="968706df-e0c2-40a6-b0db-1e53a46aac2c" >
+		<http:listener doc:name="" doc:id="d2d50e41-89fc-4c8c-81a8-5993d66a1c01" config-ref="HTTP_Listener_config" path="/foreach"/>
+		<foreach doc:name="For Each" doc:id="0f75ff40-da48-4ede-b8a1-1c257d649121" >
+			<logger level="INFO" doc:name="Logger" doc:id="2f9b7687-e732-4701-bcf3-fc36f0fd3094" message='"run" ++#[payload]'/>
+			<ee:transform doc:name="Transform Message" doc:id="3905c768-27ca-4e0b-b5cf-23ba94aed555" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload ++ {"added":"xyz"}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</foreach>
+	</flow>
+	<flow name="Parallel" doc:id="7de25883-1a01-4cf7-a44f-22c2f61ec22f" >
+		<http:listener doc:name="Listener" doc:id="b9f87123-0e80-45a2-ae55-b72fa9844e99" config-ref="HTTP_Listener_config" path="/parallel"/>
+		<parallel-foreach doc:name="Parallel For Each" doc:id="1acce617-1e71-4be7-8e1e-700383bbf0b1" >
+			<logger level="INFO" doc:name="Logger" doc:id="a7e8fa41-7348-42b6-8d5d-0c072ea98703" message='"parallel msg" ++ #[payload]'/>
+			<ee:transform doc:name="Transform Message" doc:id="aaace062-1132-4554-b8e0-048ccd79aec2" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</parallel-foreach>
+	</flow>
+</mule>
