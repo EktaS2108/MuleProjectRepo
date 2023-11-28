@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="core_components-test-suite.xml" />
+	<munit:test name="core_components-test-suite-choicerouterTest" doc:id="dd7f6496-12f7-4e4f-b8f4-1f997c03c1bf" description="Test">
+		<munit:behavior >
+			<flow-ref doc:name="Flow Reference" doc:id="879339ba-a520-418a-934c-fdcb398d0b30" name="core_components-test-suiteSub_Flow"/>
+			<munit-tools:spy doc:name="Spy" doc:id="015b3d74-93ce-4fed-b3f1-7796003c1321" processor="set-payload">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="ddcd2766-67d4-4484-9c7b-23368f83eb2c" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call>
+				<logger level="INFO" doc:name="Logger" doc:id="7b171686-f4a2-4c7d-8f4c-d3b076bd7cc2" message='#[payload++ {"before":"2"}]' />
+					<munit-tools:assert doc:name="Assert expression" doc:id="01fb0e0b-1e25-494b-8bfb-d2e8450127c3" />
+			</munit-tools:before-call>
+			<munit-tools:after-call>
+				<logger level="INFO" doc:name="Logger" doc:id="4206d413-5716-43df-8e98-68c6fcadb4ec" message='#[payload]' />
+					<munit-tools:assert doc:name="Assert expression" doc:id="ce0fd6a6-c247-4453-8691-8a62d05d9383" />
+			</munit-tools:after-call>
+		</munit-tools:spy>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow Reference" doc:id="df8d4b2a-f433-4107-b70d-0324869c272b" name="core_components-test-suiteSub_Flow" />
+			<flow-ref doc:name="Flow-ref to choicerouter" doc:id="0d8d9d3f-3efb-4b8b-9ab2-e5be2d3a32ff" name="choicerouter"/>
+		</munit:execution>
+	</munit:test>
+	<sub-flow name="core_components-test-suiteSub_Flow" doc:id="3bced21f-deaa-4e33-9502-8aef5daca45a" >
+		<munit:set-event doc:name="Set Event" doc:id="dad4b14f-c154-45b3-b2ae-06832ec1d196" cloneOriginalEvent="true">
+				<munit:payload value='&#10;{&#10;  "color": "blu"&#10;}' encoding="UTF-8" mediaType="application/json" />
+			</munit:set-event>
+	</sub-flow>
+
+
+</mule>
