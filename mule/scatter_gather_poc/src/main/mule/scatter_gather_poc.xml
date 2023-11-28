@@ -17,12 +17,12 @@ http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/cu
 	<flow name="scatter_gather_pocFlow" doc:id="d2a25980-c016-4b27-a259-83893d34c206" >
 		<http:listener doc:name="Listener" doc:id="199fe9c5-5454-4504-bc32-af29f9683fbe" config-ref="HTTP_Listener_config" path="/mainroute"/>
 		<try doc:name="Try" doc:id="55ba2b11-c10b-4d78-96ba-837e43ad4381" transactionalAction="ALWAYS_BEGIN">
-			<scatter-gather doc:name="Scatter-Gather" doc:id="d43ae52b-6f3b-44b8-b490-7aca8032fdeb" >
+			<scatter-gather doc:name="Scatter-Gather" doc:id="d43ae52b-6f3b-44b8-b490-7aca8032fdeb">
 				<route >
-					<flow-ref doc:name="Flow Reference" doc:id="d3e66376-461e-4258-96cf-04fb6fc7c7b3" name="scatter_gather_pocFlow2"/>
+					<flow-ref doc:name="Flow Reference" doc:id="d3e66376-461e-4258-96cf-04fb6fc7c7b3" name="scatter_gather_pocFlow2" />
 				</route>
 				<route >
-					<flow-ref doc:name="Flow Reference" doc:id="23983229-12cb-4212-900b-109d40bfa408" name="scatter_gather_pocFlow1"/>
+					<flow-ref doc:name="Flow Reference" doc:id="23983229-12cb-4212-900b-109d40bfa408" name="scatter_gather_pocFlow1" />
 				</route>
 			</scatter-gather>
 			<error-handler >
@@ -32,7 +32,7 @@ http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/cu
 				</on-error-propagate>
 			</error-handler>
 		</try>
-		<logger level="INFO" doc:name="Logger" doc:id="9a4e0ef2-3d61-4b50-9792-0b274c410bb7" message="#[payload]"/>
+		<logger level="INFO" doc:name="Logger" doc:id="9a4e0ef2-3d61-4b50-9792-0b274c410bb7" message="#[output application/json --- payload]"/>
 	</flow>
 	<flow name="scatter_gather_pocFlow_normal" doc:id="10c64f11-f347-405d-b2c9-6c5b48f97478" >
 		<http:listener doc:name="Listener" doc:id="70b8e516-a946-4bf6-a037-ec775a6fd71f" config-ref="HTTP_Listener_config" path="/mainroute1"/>
@@ -46,12 +46,12 @@ http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/cu
 				
 </route>
 			</scatter-gather>
-		<logger level="INFO" doc:name="Logger" doc:id="f415849a-13e6-49f4-9288-ed0528b9e031" message="#[%dw 2.0 &#10;output application/json&#10;---&#10;payload]"/>
+		<logger level="INFO" doc:name="Logger" doc:id="f415849a-13e6-49f4-9288-ed0528b9e031" message="#[%dw 2.0 &#10;output application/json&#10;---&#10;&#10;&#10;{payload: payload,&#10;	error_type: error.errorType&#10;}]"/>
 	</flow>
 	<flow name="scatter_gather_pocFlow1" doc:id="d4806bd4-b514-410b-b246-9e95ae652a38" >
 		<logger level="INFO" doc:name="Logger" doc:id="0299cf09-0767-46c8-9f8f-9f20fdf8666f" message='"route 1"'/>
 		<set-payload value='#["scatter_gather_pocflow1"]' doc:name="Set Payload" doc:id="fb2bb9ff-fe1f-4a16-b7b4-1c772a40b5b1" />
-		<raise-error doc:name="Raise error" doc:id="7ef90654-c932-4f3d-b61b-d53024264f90" type="ANY" description="exception raised"/>
+<!-- [STUDIO:"Raise error"]		<raise-error doc:name="Raise error" doc:id="7ef90654-c932-4f3d-b61b-d53024264f90" type="ANY" description="exception raised"/> [STUDIO] -->
 	</flow>
 	<flow name="scatter_gather_pocFlow2" doc:id="6a906660-81f5-44da-9360-f2455d7559ba" initialState="started">
 		<logger level="INFO" doc:name="Logger" doc:id="be1df7a2-c385-41b9-b24f-df8c4a04f263" message='"route 2"'/>
