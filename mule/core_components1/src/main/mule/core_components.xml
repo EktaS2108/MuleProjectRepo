@@ -112,7 +112,8 @@ flatten(payload..payload)]]></ee:set-payload>
 	</flow>
 	<flow name="Parsetemplate" doc:id="51dca0a1-10ba-471d-a48e-de81d359ecb2" >
 		<http:listener doc:name="Listener" doc:id="dbdd29dc-a46e-46e4-a7fa-7f341bfd9278" config-ref="HTTP_Listener_config" path="/parse"/>
-		<parse-template doc:name="Parse Template" doc:id="02507938-1c4c-4756-922c-023da25fd8e8" location="C:\Users\ESL5\Desktop\mule\temp.html"/>
+<!-- [STUDIO:"Parse Template"]		<parse-template doc:name="Parse Template" doc:id="02507938-1c4c-4756-922c-023da25fd8e8" location="C:\Users\ESL5\Desktop\mule\temp.html"/> [STUDIO] -->
+		<logger level="INFO" doc:name="Logger" doc:id="42e34305-b133-4ce1-a731-02029b41d92b" message="#[payload]"/>
 	</flow>
 	<flow name="core_componentsFlow" doc:id="c02e74be-4e51-4b80-a157-165c690c0fef" >
 		<http:listener doc:name="Listener" doc:id="3d9a906b-7f66-4540-92f8-b6065e81f342" config-ref="HTTP_Listener_config" path="/pluck"/>
